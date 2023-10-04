@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import SearchIcon from "./images/search.png";
 import cloudyWeatherIcon from "./images/cloudy.png";
@@ -22,10 +22,7 @@ const SearchBar = () => {
   const [searchCity, setSearchCity] = useState("");
   const [currentCity, setCurrentCity] = useState("");
   const [currentWeather, setCurrentWeather] = useState("");
-  const [weatherIcon, setWeatherIcon] = useState(null);
-
-  const apiKeyImages = "5f12235ca72daad3fa09b359ef72d87da993bea63af629d33d2728cf6b7f4372";
-  const apiUrlImages = `https://serpapi.com/search.json?engine=google&q=${searchCity}`;
+  const [weatherIcon, setWeatherIcon] = useState("");
 
   const onSearchCity = e => {
     e.preventDefault();
@@ -54,10 +51,43 @@ const SearchBar = () => {
       })
       .catch(error => {
         console.error(error);
+        setWeatherIcon("");
       });
 
     setSearchCity("");
   };
+
+  // Fetch weather data for Amsterdam only when the component mounts
+  useEffect(() => {
+    if (!searchCity) {
+      axios
+        .get(apiUrlWeather, {
+          params: {
+            q: "Amsterdam", // Fetch data for Amsterdam by default
+            appid: apiKeyWeather,
+            units: "metric",
+          },
+        })
+        .then(response => {
+          console.log(response.data);
+          setCurrentCity(response.data.name);
+          setCurrentWeather(Math.round(response.data.main.temp));
+          if (response.data.weather[0].main === "Clear") {
+            setWeatherIcon(sunnyWeatherIcon);
+          } else if (response.data.weather[0].main === "Rain") {
+            setWeatherIcon(rainyWeatherIcon);
+          } else if (response.data.weather[0].main === "Clouds") {
+            setWeatherIcon(cloudyWeatherIcon);
+          } else {
+            setWeatherIcon(cloudyAndSunnyIcon);
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          setWeatherIcon("");
+        });
+    }
+  }, []);
 
   return (
     <div>
@@ -77,7 +107,7 @@ const SearchBar = () => {
       </div>
       <div className='mt-20 flex justify-center flex-col items-center'>
         <div>
-          <img alt='Weather Icon' className='h-36' src={weatherIcon} />
+          <img className='h-36' src={weatherIcon} />
         </div>
         <h1 className='font-semibold text-4xl mb-4'>{currentCity}</h1>
         <div className='flex'>
