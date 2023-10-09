@@ -137,6 +137,11 @@ const SearchBar = () => {
     }
   }, []);
 
+  const getCityNameFontSizeClass = () => {
+    const lineThreshold = 10;
+    return currentCity.length > lineThreshold ? "text-2xl" : "text-4xl";
+  };
+
   return (
     <div>
       <div style={{ backgroundColor: "#FAFAFA" }} className='h-12 w-full rounded-xl flex items-center justify-center'>
@@ -153,12 +158,12 @@ const SearchBar = () => {
           </button>
         </form>
       </div>
-      <div className='mt-20 flex justify-center flex-col items-center'>
+      <div className='mt-8 flex justify-center flex-col items-center'>
         <div>
           <img className='h-36' src={weatherIcon} alt='Weather Icon' />
         </div>
         <div className='flex justify-center items-center'>
-          <h1 className='font-semibold text-4xl '>{currentCity}</h1>
+          <h1 className={`font-semibold ${getCityNameFontSizeClass()}`}>{currentCity}</h1>
           <img className='h-5.5 ml-3' src={locationIcon} alt='Location Icon' />
         </div>
         <div className='flex mt-4 mb-4'>
