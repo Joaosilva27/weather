@@ -69,6 +69,9 @@ const SearchBar = () => {
         const sunriseTimestamp = response.data.sys.sunrise * 1000;
         const localSunriseTime = new Date(sunriseTimestamp + timezoneOffsetSeconds * 1000);
 
+        // Adjust sunrise by subtracting 2 hours
+        localSunriseTime.setTime(localSunriseTime.getTime() - 7200 * 1000);
+
         const formattedTimeSunrise = localSunriseTime.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -76,6 +79,9 @@ const SearchBar = () => {
 
         const sunsetTimestamp = response.data.sys.sunset * 1000;
         const localSunsetTime = new Date(sunsetTimestamp + timezoneOffsetSeconds * 1000);
+
+        // Adjust sunset by subtracting 2 hours
+        localSunsetTime.setTime(localSunsetTime.getTime() - 7200 * 1000);
 
         const formattedTimeSunset = localSunsetTime.toLocaleTimeString([], {
           hour: "2-digit",
@@ -104,14 +110,15 @@ const SearchBar = () => {
         const lengthOfDayMinutes = Math.floor((lengthOfDay % (60 * 60 * 1000)) / (60 * 1000));
 
         const remainingDaylightHours = Math.floor(remainingDaylight / (60 * 60 * 1000));
-        const remainingDaylightMinutes = Math.floor((remainingDaylight % (60 * 60 * 1000)) / (60 * 1000) + 60);
+        const remainingDaylightMinutes = Math.floor(remainingDaylight % (60 * 60 * 1000)) / (60 * 1000);
 
-        setCurrentDaylight(
-          `${remainingDaylightHours > 0 ? remainingDaylightHours + "h" : ""} ${
-            currentTimezone < formattedTimeSunset ? remainingDaylightMinutes + "m" : "none"
-          }`
-        );
-        setCurrentLengthOfDay(`${lengthOfDayHours > 0 ? lengthOfDayHours + "h" : ""} ${lengthOfDayMinutes}m`);
+        // Round the values to the nearest whole number
+        const totalRemainingMinutes = Math.round(remainingDaylightHours * 60 + remainingDaylightMinutes);
+        const remainingHours = Math.floor(totalRemainingMinutes / 60);
+        const remainingMinutes = totalRemainingMinutes % 60;
+
+        setCurrentDaylight(`${remainingHours > 0 ? remainingHours + "h" : ""} ${remainingMinutes > 0 ? remainingMinutes + "m" : "none"}`);
+        setCurrentLengthOfDay(`${lengthOfDayHours > 0 ? lengthOfDayHours + "h" : ""} ${lengthOfDayMinutes > 0 ? lengthOfDayMinutes + "m" : ""}`);
 
         console.log("hi");
         console.log(formattedTimeSunset);
@@ -217,7 +224,7 @@ const SearchBar = () => {
     return currentCity.length > lineThreshold ? "text-2xl" : "text-4xl";
   };
 
-  const SunriseAndSunsetGraph = () => {
+  const SunriseAndSunsetGraph = ({ sunsetData }) => {
     return (
       <ResponsiveContainer width='100%' height={100}>
         <AreaChart
@@ -318,11 +325,11 @@ const SearchBar = () => {
           </div>
           <SunriseAndSunsetGraph sunsetData={sunsetData} />
           <div className='mt-3 flex flex-col'>
-            <span style={{ color: "#9A9A9A" }} className='font-medium text-sm'>
-              Length of day: {currentLengthOfDay}
+            <span className='font-medium text-sm'>
+              <span style={{ color: "#9A9A9A" }}>Length of day:</span> {currentLengthOfDay}
             </span>
-            <span style={{ color: "#9A9A9A" }} className='font-medium text-sm mt-1'>
-              Remaining daylight: {currentDaylight}
+            <span className='font-medium text-sm mt-1'>
+              <span style={{ color: "#9A9A9A" }}>Remaining daylight:</span> {currentDaylight}
             </span>
           </div>
         </div>
