@@ -1,3 +1,38 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+
+.rotate {
+  animation: rotate 10s linear infinite; /* 10s is the duration of the animation */
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes dotsAnimation {
+  0% {
+    content: "";
+  }
+  25% {
+    content: ". ";
+  }
+  50% {
+    content: ". .";
+  }
+  75% {
+    content: ". . .";
+  }
+  100% {
+    content: "";
+  }
+}
+
+.animated-dots::before {
+  content: "...";
+  animation: dotsAnimation 1.5s steps(4) infinite;
+}
