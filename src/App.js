@@ -1,6 +1,6 @@
 import "./App.css";
 import React, { PureComponent } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import SearchIcon from "./images/search.png";
@@ -24,6 +24,7 @@ function App() {
 const SearchBar = () => {
   const [sunsetData, setSunsetData] = useState([]);
   const [searchCity, setSearchCity] = useState("");
+  const [searchedCities, setSearchedCities] = useState([]);
   const [currentCity, setCurrentCity] = useState("");
   const [currentWeather, setCurrentWeather] = useState("");
   const [currentSunrise, setCurrentSunrise] = useState("");
@@ -37,9 +38,15 @@ const SearchBar = () => {
   const [currentWindSpeed, setCurrentWindSpeed] = useState("");
   const [weatherIcon, setWeatherIcon] = useState("");
   const [isNoCitySearched, setIsNoCitySearched] = useState(true);
+  const [isSearchBarClicked, setIsSearchBarClicked] = useState(false);
+  const [showList, setShowList] = useState(false);
 
   const onSearchCity = e => {
     e.preventDefault();
+
+    if (searchCity) {
+      setSearchedCities([...searchedCities, searchCity]);
+    }
 
     axios
       .get(apiUrlWeather, {
@@ -96,6 +103,7 @@ const SearchBar = () => {
         setCurrentWindSpeed(response.data.wind.speed);
         setCurrentHumidity(response.data.main.humidity);
         setIsNoCitySearched(false);
+        setShowList(false);
 
         const lengthOfDay = sunsetTimestamp - sunriseTimestamp;
 
@@ -193,6 +201,10 @@ const SearchBar = () => {
           <form onSubmit={onSearchCity} className='h-12 w-full rounded-xl flex items-center justify-center'>
             <input
               value={searchCity}
+              onClick={() => {
+                setIsSearchBarClicked(true);
+                setShowList(!showList);
+              }}
               onChange={e => setSearchCity(e.target.value)}
               placeholder='Search Location'
               style={{ backgroundColor: "#FAFAFA", outline: "none" }}
@@ -204,6 +216,23 @@ const SearchBar = () => {
           </form>
         </div>
 
+        {searchedCities.length > 1 && showList && (
+          <div id='searchbox-list' className='h-screen'>
+            <h1>List of Searched Cities:</h1>
+            <ul>
+              {searchedCities.map((city, index) => (
+                <li key={index}>{city}</li>
+              ))}
+            </ul>
+          </div> // prototype //
+          // length more than 1 means that from home page we can search one city and
+          //the ui will not appear instantly. this means we can render the list on
+          // the searchbar only after getting the city info, and not beforehand
+
+          // make it a function and add onclick to input (maybe not, just showlist true and false)
+          // make it so showlist is true when it clicks and its false when not on searchbar
+        )}
+
         {isNoCitySearched ? (
           <div style={{ height: "80vh" }} className='flex justify-center items-center'>
             <img className='h-20 rotate' src={sunnyWeatherIcon} />
@@ -213,75 +242,77 @@ const SearchBar = () => {
           </div>
         ) : (
           <div>
-            <div className='mt-8 flex justify-center flex-col items-center'>
-              <div>
-                <img className='h-36' src={weatherIcon} alt='Weather Icon' />
-              </div>
-              <div className='flex justify-center items-center'>
-                <h1 className={`font-semibold ${getCityNameFontSizeClass()}`}>{currentCity}</h1>
-                <img className='h-5.5 ml-3' src={locationIcon} alt='Location Icon' />
-              </div>
-              <div className='flex mt-4 mb-4'>
-                <p className='font-semibold text-7xl'>{currentWeather}</p>
-                {currentCity && <span className='text-2xl ml-2 mb-2'>º</span>}
-              </div>
-            </div>
             <div>
-              <div style={{ backgroundColor: "#FAFAFA" }} className='flex w-full justify-between rounded-xl pt-2 pb-2 pl-5 pr-5'>
-                <div className='flex flex-col justify-center items-center'>
-                  <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
-                    TIME
-                  </span>
-                  <span style={{ color: "#9A9A9A" }} className='font-medium'>
-                    {currentTimezone}
-                  </span>
+              <div className='mt-8 flex justify-center flex-col items-center'>
+                <div>
+                  <img className='h-36' src={weatherIcon} alt='Weather Icon' />
                 </div>
-                <div className='flex flex-col justify-center items-center'>
-                  <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
-                    HUMIDITY
-                  </span>
-                  <span style={{ color: "#9A9A9A" }} className='font-medium'>
-                    {currentHumidity}
-                  </span>
+                <div className='flex justify-center items-center'>
+                  <h1 className={`font-semibold ${getCityNameFontSizeClass()}`}>{currentCity}</h1>
+                  <img className='h-5.5 ml-3' src={locationIcon} alt='Location Icon' />
                 </div>
-                <div className='flex flex-col justify-center items-center'>
-                  <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
-                    {currentSnow ? <p>% SNOW</p> : <p>% RAIN</p>}
-                  </span>
-                  <span style={{ color: "#9A9A9A" }} className='font-medium'>
-                    {currentSnow ? <p>{currentSnow}</p> : currentRain ? <p>{currentRain}</p> : <p>0</p>}
-                  </span>
-                </div>
-                <div className='flex flex-col justify-center items-center'>
-                  <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
-                    WIND
-                  </span>
-                  <span style={{ color: "#9A9A9A" }} className='font-medium'>
-                    {currentWindSpeed} /h
-                  </span>
+                <div className='flex mt-4 mb-4'>
+                  <p className='font-semibold text-7xl'>{currentWeather}</p>
+                  {currentCity && <span className='text-2xl ml-2 mb-2'>º</span>}
                 </div>
               </div>
-              <div style={{ backgroundColor: "#FAFAFA" }} className='flex flex-col w-full justify-between rounded-xl mt-4 pt-2 pb-2 pl-5 pr-5'>
-                <span style={{ color: "#C4C4C4" }} className='text-sm mb-8'>
-                  SUNRISE & SUNSET
-                </span>
-                <div className='w-full flex justify-between items-center pl-5 pr-3.5 '>
-                  <span style={{ color: "#9A9A9A" }} className='font-medium'>
-                    {currentSunrise}
-                  </span>
-                  <img src={weatherIcon} className='h-4 relative top-5 right-2 z-10' />
-                  <span style={{ color: "#9A9A9A" }} className='font-medium'>
-                    {currentSunset}
-                  </span>
+              <div>
+                <div style={{ backgroundColor: "#FAFAFA" }} className='flex w-full justify-between rounded-xl pt-2 pb-2 pl-5 pr-5'>
+                  <div className='flex flex-col justify-center items-center'>
+                    <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
+                      TIME
+                    </span>
+                    <span style={{ color: "#9A9A9A" }} className='font-medium'>
+                      {currentTimezone}
+                    </span>
+                  </div>
+                  <div className='flex flex-col justify-center items-center'>
+                    <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
+                      HUMIDITY
+                    </span>
+                    <span style={{ color: "#9A9A9A" }} className='font-medium'>
+                      {currentHumidity}
+                    </span>
+                  </div>
+                  <div className='flex flex-col justify-center items-center'>
+                    <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
+                      {currentSnow ? <p>% SNOW</p> : <p>% RAIN</p>}
+                    </span>
+                    <span style={{ color: "#9A9A9A" }} className='font-medium'>
+                      {currentSnow ? <p>{currentSnow}</p> : currentRain ? <p>{currentRain}</p> : <p>0</p>}
+                    </span>
+                  </div>
+                  <div className='flex flex-col justify-center items-center'>
+                    <span style={{ color: "#C4C4C4" }} className='text-sm mb-0.5'>
+                      WIND
+                    </span>
+                    <span style={{ color: "#9A9A9A" }} className='font-medium'>
+                      {currentWindSpeed} /h
+                    </span>
+                  </div>
                 </div>
-                <SunriseAndSunsetGraph sunsetData={sunsetData} />
-                <div className='mt-3 flex flex-col'>
-                  <span className='font-medium text-sm'>
-                    <span style={{ color: "#9A9A9A" }}>Length of day:</span> {currentLengthOfDay}
+                <div style={{ backgroundColor: "#FAFAFA" }} className='flex flex-col w-full justify-between rounded-xl mt-4 pt-2 pb-2 pl-5 pr-5'>
+                  <span style={{ color: "#C4C4C4" }} className='text-sm mb-8'>
+                    SUNRISE & SUNSET
                   </span>
-                  <span className='font-medium text-sm mt-1'>
-                    <span style={{ color: "#9A9A9A" }}>Remaining daylight:</span> {currentDaylight}
-                  </span>
+                  <div className='w-full flex justify-between items-center pl-5 pr-3.5 '>
+                    <span style={{ color: "#9A9A9A" }} className='font-medium'>
+                      {currentSunrise}
+                    </span>
+                    <img src={weatherIcon} className='h-4 relative top-5 right-2 z-10' />
+                    <span style={{ color: "#9A9A9A" }} className='font-medium'>
+                      {currentSunset}
+                    </span>
+                  </div>
+                  <SunriseAndSunsetGraph sunsetData={sunsetData} />
+                  <div className='mt-3 flex flex-col'>
+                    <span className='font-medium text-sm'>
+                      <span style={{ color: "#9A9A9A" }}>Length of day:</span> {currentLengthOfDay}
+                    </span>
+                    <span className='font-medium text-sm mt-1'>
+                      <span style={{ color: "#9A9A9A" }}>Remaining daylight:</span> {currentDaylight}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
