@@ -27,26 +27,26 @@ const SearchBar = () => {
   const [searchedCities, setSearchedCities] = useState([]);
   const [currentCity, setCurrentCity] = useState("");
   const [currentWeather, setCurrentWeather] = useState("");
+  const [searchedWeathers, setSearchedWeathers] = useState([]);
   const [currentSunrise, setCurrentSunrise] = useState("");
   const [currentSunset, setCurrentSunset] = useState("");
   const [currentLengthOfDay, setCurrentLengthOfDay] = useState("");
   const [currentDaylight, setCurrentDaylight] = useState("");
   const [currentTimezone, setCurrentTimezone] = useState("");
+  const [searchedTimezones, setSearchedTimezones] = useState([]);
   const [currentHumidity, setCurrentHumidity] = useState("");
   const [currentRain, setCurrentRain] = useState("");
   const [currentSnow, setCurrentSnow] = useState("");
+  const [searchedWeatherIcons, setSearchedWeatherIcons] = useState([]);
   const [currentWindSpeed, setCurrentWindSpeed] = useState("");
   const [weatherIcon, setWeatherIcon] = useState("");
+  const [searchWeatherDescription, setSearchWeatherDescription] = useState([]);
   const [isNoCitySearched, setIsNoCitySearched] = useState(true);
   const [isSearchBarClicked, setIsSearchBarClicked] = useState(false);
   const [showList, setShowList] = useState(false);
 
   const onSearchCity = e => {
     e.preventDefault();
-
-    if (searchCity) {
-      setSearchedCities([...searchedCities, searchCity]);
-    }
 
     axios
       .get(apiUrlWeather, {
@@ -105,6 +105,18 @@ const SearchBar = () => {
         setIsNoCitySearched(false);
         setShowList(false);
 
+        // this has the same function as CurrentWeather, however if I try passing it to setSearchedWeathers as an argument, it will not return the weather value for the first city.
+        const weatherTemperature = Math.round(response.data.main.temp); // !!! TEMPORARY FIX !!!
+        const weatherDescription = response.data.weather[0].description;
+
+        console.log("DESCRIPTIOIJOIJOIJOJOIJOJOIJOIJ", weatherDescription);
+        console.log(response.data.weather.description);
+
+        setSearchedWeathers([...searchedWeathers, weatherTemperature]);
+        setSearchedCities([...searchedCities, searchCity]);
+        setSearchedTimezones([...searchedTimezones, formattedTime]);
+        setSearchWeatherDescription([...searchWeatherDescription, weatherDescription]);
+
         const lengthOfDay = sunsetTimestamp - sunriseTimestamp;
 
         const now = new Date().getTime();
@@ -125,12 +137,16 @@ const SearchBar = () => {
 
         if (response.data.weather[0].main === "Clear") {
           setWeatherIcon(sunnyWeatherIcon);
+          setSearchedWeatherIcons([...searchedWeatherIcons, sunnyWeatherIcon]);
         } else if (response.data.weather[0].main === "Rain") {
           setWeatherIcon(rainyWeatherIcon);
+          setSearchedWeatherIcons([...searchedWeatherIcons, rainyWeatherIcon]);
         } else if (response.data.weather[0].main === "Clouds") {
           setWeatherIcon(cloudyWeatherIcon);
+          setSearchedWeatherIcons([...searchedWeatherIcons, cloudyWeatherIcon]);
         } else {
           setWeatherIcon(cloudyAndSunnyIcon);
+          setSearchedWeatherIcons([...searchedWeatherIcons, cloudyAndSunnyIcon]);
         }
       })
       .catch(error => {
@@ -194,6 +210,32 @@ const SearchBar = () => {
     );
   };
 
+  const cityWeatherWidget = () => {
+    return (
+      <div className='rounded-xl'>
+        <ul>
+          {searchedCities.map((city, index) => (
+            <div style={{ backgroundColor: "#FAFAFA" }} className='flex justify-between p-4 mb-6 mt-2'>
+              <div className='flex flex-col items-center w-32 text-center'>
+                <span className='font-semibold text-xl'>{city.charAt(0).toUpperCase() + city.slice(1)}</span>
+                <div className='flex ml-4'>
+                  <span className='text-7xl font-semibold'>{searchedWeathers[index]}</span> <span className='text-2xl ml-1 mb-2'>º</span>
+                </div>
+                <span>{searchedTimezones[index]}</span>
+              </div>
+              <div className='flex flex-col items-center justify-center'>
+                <img className='h-20' src={searchedWeatherIcons[index]} />
+                <span className='font-normal'>{searchWeatherDescription[index]}</span>
+              </div>
+            </div>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  console.log("AAAFAAFEAUFHEAIUFH", setSearchedWeatherIcons);
+
   return (
     <div>
       <div>
@@ -217,13 +259,8 @@ const SearchBar = () => {
         </div>
 
         {searchedCities.length > 1 && showList && (
-          <div id='searchbox-list' className='h-screen'>
-            <h1>List of Searched Cities:</h1>
-            <ul>
-              {searchedCities.map((city, index) => (
-                <li key={index}>{city}</li>
-              ))}
-            </ul>
+          <div id='searchbox-list' className='h-screen pt-4'>
+            {cityWeatherWidget()}
           </div> // prototype //
           // length more than 1 means that from home page we can search one city and
           //the ui will not appear instantly. this means we can render the list on
