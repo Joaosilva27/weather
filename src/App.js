@@ -48,6 +48,12 @@ const SearchBar = () => {
   const onSearchCity = e => {
     e.preventDefault();
 
+    console.log("being clicked-11121oufeiwuhfeioufhji");
+
+    if (searchCity.length === 0) {
+      return;
+    }
+
     axios
       .get(apiUrlWeather, {
         params: {
@@ -105,12 +111,10 @@ const SearchBar = () => {
         setIsNoCitySearched(false);
         setShowList(false);
 
-        // this has the same function as CurrentWeather, however if I try passing it to setSearchedWeathers as an argument, it will not return the weather value for the first city.
-        const weatherTemperature = Math.round(response.data.main.temp); // !!! TEMPORARY FIX !!!
+        // this has the same function as CurrentWeather, however if I try passing it..
+        // ..to setSearchedWeathers as an argument, it will not return the weather value for the first city.
+        const weatherTemperature = Math.round(response.data.main.temp);
         const weatherDescription = response.data.weather[0].description;
-
-        console.log("DESCRIPTIOIJOIJOIJOJOIJOJOIJOIJ", weatherDescription);
-        console.log(response.data.weather.description);
 
         setSearchedWeathers([...searchedWeathers, weatherTemperature]);
         setSearchedCities([...searchedCities, searchCity]);
@@ -147,6 +151,12 @@ const SearchBar = () => {
         } else {
           setWeatherIcon(cloudyAndSunnyIcon);
           setSearchedWeatherIcons([...searchedWeatherIcons, cloudyAndSunnyIcon]);
+        }
+
+        if (currentDaylight === "none") {
+          setWeatherIcon(cloudyWeatherIcon); // TODOOOOOOOO
+          console.log("NO DAYLIGHT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+          setSearchedWeatherIcons([...searchedWeatherIcons, cloudyWeatherIcon]);
         }
       })
       .catch(error => {
@@ -216,7 +226,7 @@ const SearchBar = () => {
         <ul>
           {searchedCities.map((city, index) => (
             <div style={{ backgroundColor: "#FAFAFA" }} className='flex justify-between p-4 mb-6 mt-2'>
-              <div className='flex flex-col items-center w-32 text-center'>
+              <div className='flex flex-col items-center w-32 text-center z-50'>
                 <span className='font-semibold text-xl'>{city.charAt(0).toUpperCase() + city.slice(1)}</span>
                 <div className='flex ml-4'>
                   <span className='text-7xl font-semibold'>{searchedWeathers[index]}</span> <span className='text-2xl ml-1 mb-2'>º</span>
@@ -259,7 +269,7 @@ const SearchBar = () => {
         </div>
 
         {searchedCities.length > 1 && showList && (
-          <div id='searchbox-list' className='h-screen pt-4'>
+          <div id='searchbox-list' className='pt-4'>
             {cityWeatherWidget()}
           </div> // prototype //
           // length more than 1 means that from home page we can search one city and
