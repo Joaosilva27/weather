@@ -10,7 +10,7 @@ import rainyWeatherIcon from "./images/rainy.png";
 import sunnyWeatherIcon from "./images/sunny.png";
 import locationIcon from "./images/location.png";
 
-const apiKeyWeather = "1bccb948ec59bad9834801d705d72655";
+const apiKeyWeather = process.env.REACT_APP_OPENWEATHER_API_KEY;
 const apiUrlWeather = "https://api.openweathermap.org/data/2.5/weather";
 
 function App() {
